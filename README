@@ -1,0 +1,118 @@
+NAME
+
+    Mail::Audit::Attach - Mail::Audit plugin for attachment handling.
+
+SYNOPSIS
+
+      use Mail::Audit qw(Attach);
+
+      my $mail = Mail::Audit->new;
+
+      # ...
+
+      my $num_attachment = $mail->num_attachments;
+      my $attachments = $mail->attachments;
+
+      remove_attachments(filename => "\.(exe|scr|pif)",
+                         smaller_than => 20000);
+
+      $mail->remove_attachments(mime_type => "text/html");
+
+      foreach (@$attachments) {
+          $_->save($attachdir) 
+              if ($_->mime_type =~ |^image/|);
+          $_->remove 
+              if ($_->filename =~ |\.(vcf)$|);
+      }
+
+      $mail->make_singlepart; # if possible
+
+DEFINITION
+
+    For the purpose of this plugin, an attachment is a MIME part with the
+    disposition 'attachment'. Files attached to non-MIME messages will not
+    be discovered.
+
+DESCRIPTION
+
+    This is a Mail::Audit plugin which provides easy access to files
+    attached to mail messages. Besides Mail::Audit, it requires the
+    `MIME::Entity' module.
+
+  METHODS IN MAIL::AUDIT
+
+    `num_attachments'
+        Returns the number of attachments found
+
+    `attachments'
+        Returns a reference to a list of attachment objects
+
+    `remove_attachments'
+        Removes attachments from the mail that match the criteria specified
+        via the options, or all, if no options are specified. Currently, the
+        following options (hash keys) are supported:
+
+        `mime_type'
+        `file_name'
+            Specify a regular expression; attachments whose MIME type or
+            filename matches this expression are removed.
+
+        `smaller_than'
+        `bigger_than'
+            Specify file size limits; attachments smaller or bigger than
+            these limits are removed.
+
+        An attachment must match all of the criteria to be removed. Returns
+        the number of attachments removed.
+
+  ATTACHMENT PROPERTIES
+
+    The attachments are a subclass of `MIME::Entity'. Check out MIME::Entity
+    to learn about useful methods like `mime_type' or `bodyhandle' that are
+    inherited.
+
+    `size'
+        Returns the size of the attached file.
+
+    `filename'
+        Returns the original filename given in the MIME headers.
+
+    `safe_filename'
+        Returns the filename, with /\:;[]| and whitespace replaced by
+        underscores, or 'attachment' if the original filename is empty.
+
+  ATTACHMENT ACTIONS
+
+    `remove'
+        Removes the attachment, ie. detaches the corresponding MIME entity
+        and purges the body data.
+
+    `save($location)'
+        Saves the attachment as a file in `$location'. `$location' is
+        assumed to be a directory if it ends with a '/', or if `-d
+        $location' is true. In this case, `save' uses `safe_filename' for
+        storing the file inside that directory. Otherwise, $location is
+        assumed to be a fully-qualified path with filename.
+
+        In both cases, `save' checks whether the target file exists and
+        appends '.n' to the filename, with n being an integer that leads to
+        a unique filename, if necessary.
+
+        Returns the filename used to save the file, or undef if an error
+        ocurred (you might want to take a look at `$!' in that case).
+
+        Note that the attachment is not removed.
+
+AUTHOR
+
+    Christian Renz <crenz@web42.com>
+
+LICENSE
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+SEE ALSO
+
+    Mail::Audit. MIME::Entity.
+
