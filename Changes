@@ -1,5 +1,10 @@
 Revision history for Perl extension Mail::Audit::Attach.
 
+0.92  Sat Feb  8 13:00:00 2003
+	- Now relies on MIME::Head to recognize attachments.
+	  "Never try to be too clever."
+	- No more warnings.
+
 0.91  Thu Feb  6 22:30:00 2003
         - Now recognizes attachments with Content-Disposition inline,
           but a given filename. This became necessary because Netscape

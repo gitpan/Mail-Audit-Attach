@@ -8,11 +8,9 @@ use strict;
 use vars qw($VERSION @ISA);
 use MIME::Entity;
 
-$VERSION = '0.91';
+$VERSION = '0.92';
 
 @ISA = qw(MIME::Entity);
-
-our $attach_regex = 'attachment|inline;\s+filename=';
 
 # constructor
 
@@ -126,7 +124,7 @@ sub num_attachments {
     if (UNIVERSAL::isa($self, "MIME::Entity")) {
 	foreach ($self->parts_DFS) {
 	    $count++
-		if ($_->head->get("Content-Disposition") =~ /$attach_regex/i);
+		if (defined $_->head->recommended_filename());
 	}
 
 	return $count;
@@ -140,8 +138,8 @@ sub attachments {
     my $self = shift;
 
     if (UNIVERSAL::isa($self, "MIME::Entity")) {
-	my @entities = grep { $_->head->get("Content-Disposition") =~ 
-            /$attach_regex/ } $self->parts_DFS;
+	my @entities = grep { defined $_->head->recommended_filename() } 
+	                    $self->parts_DFS;
         my $attachments = [];
         foreach (@entities) {
 	    push @$attachments, Mail::Audit::Attach->new(ENTITY => $_,
@@ -174,7 +172,7 @@ sub _remove_attachments {
 
     my @parts = $msg->parts;
     foreach my $part (@parts) {
-	if ($part->head->get("Content-Disposition") =~ /$attach_regex/i) {
+	if (defined $_->head->recommended_filename()) {
 	  COND: {
 	      last COND if (defined($opts{mime_type}) &&
 			    $part->mime_type !~ $opts{mime_type});
@@ -235,9 +233,8 @@ Mail::Audit::Attach - Mail::Audit plugin for attachment handling.
 
 =head1 DEFINITION
 
-For the purpose of this plugin, an attachment is a MIME part with the
-disposition 'attachment', or with the disposition 'inline' _and_ a
-given filename. Files attached to non-MIME messages will not be
+For the purpose of this plugin, an attachment is a MIME part that
+has a filename. Files attached to non-MIME messages will not be
 discovered.
 
 =head1 DESCRIPTION

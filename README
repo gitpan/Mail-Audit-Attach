@@ -26,8 +26,7 @@ SYNOPSIS
       $mail->make_singlepart; # if possible
 
 DEFINITION
-    For the purpose of this plugin, an attachment is a MIME part with the
-    disposition 'attachment', or with the disposition 'inline' _and_ a given
+    For the purpose of this plugin, an attachment is a MIME part that has a
     filename. Files attached to non-MIME messages will not be discovered.
 
 DESCRIPTION
