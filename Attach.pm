@@ -5,12 +5,15 @@ package Mail::Audit::Attach;
 # it under the same terms as Perl itself.
 
 use strict;
-use vars qw($VERSION @ISA);
+use vars qw($VERSION @ISA $ERROR);
 use MIME::Entity;
+use File::Spec;
 
-$VERSION = '0.92';
+$VERSION = '0.93';
 
 @ISA = qw(MIME::Entity);
+
+$ERROR = '';
 
 # constructor
 
@@ -24,6 +27,18 @@ sub new {
 }
 
 # properties
+
+sub error {
+    return $ERROR;
+}
+
+sub _set_error {
+    my ($error) = @_;
+
+    $ERROR = $error;
+
+    return undef;
+}
 
 sub size {
     my $self = shift;
@@ -63,6 +78,7 @@ sub remove {
 sub _remove_part {
     my $msg = shift;
     my $part = shift;
+    local $_;
     
     foreach ($msg->parts) {
 	if ($_ == $part) {
@@ -79,14 +95,13 @@ sub _remove_part {
 
 sub save {
     my $self = shift;
-    my $location = shift;
-    my $filename = '';
+    my $location = shift || File::Spec->curdir;
+    my $filename = $self->safe_filename;
     my $n = 1;
+    local $_;
 
-    if ($location =~ m|/$|) {
-	$filename = $location . $self->safe_filename;
-    } elsif (-d $location) {
-	$filename = $location . '/' . $self->safe_filename;
+    if (-d $location) {
+	$filename = File::Spec->catfile($location, $self->safe_filename);
     } else {
 	$filename = $location;
     }
@@ -99,8 +114,10 @@ sub save {
 	$filename = "$filename.$n";
     }
 
-    my $io = $self->open("r") or return undef;
-    open(SAVE, ">$filename") or return undef;
+    my $io = $self->open("r") 
+	or return _set_error("Can't open internal bodyhandle");
+    open(SAVE, ">$filename")
+	or return _set_error("Can't save to '$filename': $!\n");
     while (defined($_ = $io->getline)) {
 	print SAVE $_;
     }
@@ -120,6 +137,7 @@ use MIME::Head;
 sub num_attachments {
     my $self = shift;
     my $count = 0;
+    local $_;
 
     if (UNIVERSAL::isa($self, "MIME::Entity")) {
 	foreach ($self->parts_DFS) {
@@ -136,9 +154,10 @@ sub num_attachments {
 sub attachments {
 # TODO: walk the tree ourself and save the parent instead of CREATOR.
     my $self = shift;
+    local $_;
 
     if (UNIVERSAL::isa($self, "MIME::Entity")) {
-	my @entities = grep { defined $_->head->recommended_filename() } 
+	my @entities = grep { defined $_->head->recommended_filename } 
 	                    $self->parts_DFS;
         my $attachments = [];
         foreach (@entities) {
@@ -169,10 +188,11 @@ sub _remove_attachments {
     my $msg = shift;
     my %opts = @_;
     my $count = 0;
+    local $_;
 
     my @parts = $msg->parts;
     foreach my $part (@parts) {
-	if (defined $_->head->recommended_filename()) {
+	if (defined $part->head->recommended_filename()) {
 	  COND: {
 	      last COND if (defined($opts{mime_type}) &&
 			    $part->mime_type !~ $opts{mime_type});
@@ -318,28 +338,35 @@ purges the body data.
 
 =item C<save($location)>
 
-Saves the attachment as a file in C<$location>. C<$location> is
-assumed to be a directory if it ends with a '/', or if C<-d $location>
-is true. In this case, C<save> uses C<safe_filename> for storing the
-file inside that directory. Otherwise, $location is assumed to be a
-fully-qualified path with filename.
+Saves the attachment as a file in C<$location>. If C<$location> is a
+directory (ie if C<-d $location>), C<save> uses C<safe_filename> to
+store the file inside that directory, else C<$location> is assumed to
+be a fully-qualified path with filename.
 
 In both cases, C<save> checks whether the target file exists and
 appends '.n' to the filename, with n being an integer that leads to a
 unique filename, if necessary.
 
 Returns the filename used to save the file, or undef if an error
-ocurred (you might want to take a look at C<$!> in that case).
+ocurred (you might want to take a look at
+C<Mail::Audit::Attach::error> in that case).
 
 Note that the attachment is not removed.
 
 =back
+
+=head2 ERROR FUNCTION
+
+C<Mail::Audit::Attach::error> will return an error message if an
+action failed (currently only set by C<save>).
 
 =head1 AUTHOR
 
 Christian Renz <crenz@web42.com>
 
 =head1 LICENSE
+
+Copyright (C) 2002-2003 Christian Renz <crenz@web42.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

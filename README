@@ -83,25 +83,32 @@ DESCRIPTION
         and purges the body data.
 
     "save($location)"
-        Saves the attachment as a file in "$location". "$location" is
-        assumed to be a directory if it ends with a '/', or if "-d
-        $location" is true. In this case, "save" uses "safe_filename" for
-        storing the file inside that directory. Otherwise, $location is
-        assumed to be a fully-qualified path with filename.
+        Saves the attachment as a file in "$location". If "$location" is a
+        directory (ie if "-d $location"), "save" uses "safe_filename" to
+        store the file inside that directory, else "$location" is assumed to
+        be a fully-qualified path with filename.
 
         In both cases, "save" checks whether the target file exists and
         appends '.n' to the filename, with n being an integer that leads to
         a unique filename, if necessary.
 
         Returns the filename used to save the file, or undef if an error
-        ocurred (you might want to take a look at "$!" in that case).
+        ocurred (you might want to take a look at
+        "Mail::Audit::Attach::error" in that case).
 
         Note that the attachment is not removed.
+
+  ERROR FUNCTION
+
+    "Mail::Audit::Attach::error" will return an error message if an action
+    failed (currently only set by "save").
 
 AUTHOR
     Christian Renz <crenz@web42.com>
 
 LICENSE
+    Copyright (C) 2002-2003 Christian Renz <crenz@web42.com>
+
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
 
