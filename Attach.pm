@@ -4,15 +4,15 @@ package Mail::Audit::Attach;
 # This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: Attach.pm,v 1.3 2002/06/02 09:05:09 crenz Exp $
-
 use strict;
 use vars qw($VERSION @ISA);
 use MIME::Entity;
 
-$VERSION = '0.90';
+$VERSION = '0.91';
 
 @ISA = qw(MIME::Entity);
+
+our $attach_regex = 'attachment|inline;\s+filename=';
 
 # constructor
 
@@ -126,8 +126,7 @@ sub num_attachments {
     if (UNIVERSAL::isa($self, "MIME::Entity")) {
 	foreach ($self->parts_DFS) {
 	    $count++
-		if ($_->head->get("Content-Disposition") =~
-		    /^attachment/i);
+		if ($_->head->get("Content-Disposition") =~ /$attach_regex/i);
 	}
 
 	return $count;
@@ -142,7 +141,7 @@ sub attachments {
 
     if (UNIVERSAL::isa($self, "MIME::Entity")) {
 	my @entities = grep { $_->head->get("Content-Disposition") =~ 
-				  /^attachment/i } $self->parts_DFS;
+            /$attach_regex/ } $self->parts_DFS;
         my $attachments = [];
         foreach (@entities) {
 	    push @$attachments, Mail::Audit::Attach->new(ENTITY => $_,
@@ -175,7 +174,7 @@ sub _remove_attachments {
 
     my @parts = $msg->parts;
     foreach my $part (@parts) {
-	if ($part->head->get("Content-Disposition") =~ /^attachment/i) {
+	if ($part->head->get("Content-Disposition") =~ /$attach_regex/i) {
 	  COND: {
 	      last COND if (defined($opts{mime_type}) &&
 			    $part->mime_type !~ $opts{mime_type});
@@ -237,8 +236,9 @@ Mail::Audit::Attach - Mail::Audit plugin for attachment handling.
 =head1 DEFINITION
 
 For the purpose of this plugin, an attachment is a MIME part with the
-disposition 'attachment'. Files attached to non-MIME messages will not
-be discovered.
+disposition 'attachment', or with the disposition 'inline' _and_ a
+given filename. Files attached to non-MIME messages will not be
+discovered.
 
 =head1 DESCRIPTION
 

@@ -1,5 +1,13 @@
 Revision history for Perl extension Mail::Audit::Attach.
 
+0.91  Thu Feb  6 22:30:00 2003
+        - Now recognizes attachments with Content-Disposition inline,
+          but a given filename. This became necessary because Netscape
+   	  Communicator and other clients send their attachments that way.
+
+	  Thanks to Jeff Engelhardt and Vladimir Parkhaev for bringing
+          this to my attention.
+
 0.90  Sat Jun  1 19:35:24 2002
 	- original version; created by h2xs 1.19
 
