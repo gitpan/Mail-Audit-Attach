@@ -1,6 +1,6 @@
 package Mail::Audit::Attach;
 
-# Copyright (c) 2002 Christian Renz <crenz@web42.com>. All rights reserved.
+# Copyright (c) 2002-2005 Christian Renz <crenz@web42.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
@@ -9,7 +9,7 @@ use vars qw($VERSION @ISA $ERROR);
 use MIME::Entity;
 use File::Spec;
 
-$VERSION = '0.93';
+$VERSION = '0.94';
 
 @ISA = qw(MIME::Entity);
 
@@ -263,6 +263,17 @@ This is a Mail::Audit plugin which provides easy access to files
 attached to mail messages. Besides Mail::Audit, it requires the
 C<MIME::Entity> module.
 
+=head2 CONSTRUCTOR
+
+=over 4
+
+=item C<new>
+
+This constructor is called by L<Mail::Audit>; it should not be necessary
+to create a Mail::Audit::Attach object manually.
+
+=back
+
 =head2 METHODS IN MAIL::AUDIT
 
 =over 4
@@ -274,6 +285,10 @@ Returns the number of attachments found
 =item C<attachments>
 
 Returns a reference to a list of attachment objects
+
+=item C<error>
+
+Returns a string with an error message (if an error ocurred).
 
 =item C<remove_attachments>
 
@@ -366,7 +381,7 @@ Christian Renz <crenz@web42.com>
 
 =head1 LICENSE
 
-Copyright (C) 2002-2003 Christian Renz <crenz@web42.com>
+Copyright (C) 2002-2005 Christian Renz <crenz@web42.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

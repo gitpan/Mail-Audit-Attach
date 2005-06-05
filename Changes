@@ -1,11 +1,15 @@
 Revision history for Perl extension Mail::Audit::Attach.
 
+0.94  Sun Jun 05 23:00:00 2005
+    - Updated distribution to more modern format.
+    - Added POD tests.
+
 0.93  Sat Apr 14 00:30:00 2003
-        - Mail::Audit->save died when passed an empty location. Fixed.
-          location is now optional.
-        - Now uses File::Spec for more portability
-        - Introduced Mail::Audit::error (used by save)
-        - Localized $_ where used
+    - Mail::Audit->save died when passed an empty location. Fixed.
+      location is now optional.
+    - Now uses File::Spec for more portability
+    - Introduced Mail::Audit::error (used by save)
+    - Localized $_ where used
 
 0.92  Sat Feb  8 13:00:00 2003
 	- Now relies on MIME::Head to recognize attachments.
